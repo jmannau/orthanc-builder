@@ -2,7 +2,7 @@ set -ex
 
 # example
 # To build locally:
-# ./local-build.sh 
+# ./local-build.sh
 # ./local-build.sh version=unstable skipCommitChecks=1
 # ./local-build.sh version=unstable skipCommitChecks=1 image=full
 # To build from CI:
@@ -22,15 +22,13 @@ currentTag=current
 pushTag=unknown
 image=normal
 
+for argument in "$@"; do
+    key=$(echo $argument | cut -f1 -d=)
 
-for argument in "$@"
-do
-   key=$(echo $argument | cut -f1 -d=)
+    key_length=${#key}
+    value="${argument:$key_length+1}"
 
-   key_length=${#key}
-   value="${argument:$key_length+1}"
-
-   export "$key"="$value"
+    export "$key"="$value"
 done
 
 echo "version          = $version"
@@ -70,7 +68,8 @@ BASE_DEBIAN_IMAGE=bullseye-20230202-slim
 BASE_BUILDER_IMAGE_TAG=$BASE_DEBIAN_IMAGE-$version
 
 # list all intermediate targets.  It allows us to "slow down" the build and see what's going wrong (which is not possible with 10 parallel builds)
-buildTargets="build-orthanc build-gdcm build-plugin-pg build-plugin-mysql build-plugin-transfers build-plugin-dicomweb build-plugin-wsi build-plugin-owv build-plugin-auth build-plugin-python build-plugin-odbc build-plugin-indexer build-plugin-neuro build-plugin-tcia build-stone-viewer build-s3-object-storage build-oe2"
+# buildTargets="build-orthanc build-gdcm build-plugin-pg build-plugin-mysql build-plugin-transfers build-plugin-dicomweb build-plugin-wsi build-plugin-owv build-plugin-auth build-plugin-python build-plugin-odbc build-plugin-indexer build-plugin-neuro build-plugin-tcia build-stone-viewer build-s3-object-storage build-oe2"
+buildTargets="build-orthanc build-gdcm build-plugin-pg build-plugin-mysql build-plugin-transfers build-plugin-dicomweb build-plugin-wsi build-plugin-owv build-plugin-auth build-plugin-python build-plugin-odbc build-plugin-indexer build-plugin-neuro build-plugin-tcia build-s3-object-storage build-oe2"
 
 # by default, we try to build only the normal image (oposed to the full image with vcpkg and MSSQL drivers)
 finalImageTarget=orthanc-no-vcpkg
@@ -82,7 +81,6 @@ buildTargets="$buildTargets $finalImageTarget"
 
 # to debug a particular build, you can hardcode the target hereunder (don't commit that !)
 # buildTargets=build-plugin-neuro
-
 
 if [[ $type == "local" ]]; then
     from_cache_arg_runner_base=
@@ -128,11 +126,10 @@ else
     # when building in CI, use buildx
     build="buildx build"
     push_load_arg="--push"
-    
+
     # when building in CI, don't use intermediate targets (it would push plenty of images)
     buildTargets=$finalImageTarget
 fi
-
 
 if [[ $step == "push" ]]; then
 
@@ -151,7 +148,6 @@ else
     final_tag=$currentTag
 
 fi
-
 
 # runner_base_tag=$final_image_temporary_tag
 # builder_base_tag=$final_image_temporary_tag
@@ -207,7 +203,6 @@ if [[ $image == "full" ]]; then
         -f docker/orthanc/Dockerfile.builder-vcpkg --target orthanc-build-vcpkg-google docker/orthanc
 fi
 
-
 for target in $buildTargets; do
 
     if [[ $target == $finalImageTarget ]]; then
@@ -246,6 +241,6 @@ for target in $buildTargets; do
         $push_load_arg \
         $tag_arg \
         --target $target \
-        -f docker/orthanc/Dockerfile  docker/orthanc/
+        -f docker/orthanc/Dockerfile docker/orthanc/
 
 done
