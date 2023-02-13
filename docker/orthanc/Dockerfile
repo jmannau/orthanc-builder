@@ -171,7 +171,7 @@ RUN make -j 4
 
 ########################## Stone Web Viewer
 
-FROM jodogne/wasm-builder:2.0.23 as build-wasm-stone-viewer
+# FROM jodogne/wasm-builder:2.0.23 as build-wasm-stone-viewer
 
 # TODO for ARM64,... problem: emsdk 2.0.23 does not exist for ARM64 and stone is not ready to build with 3.1.8
 # this is equivalent to the jodogne/wasm-builder:2.0.23 image (it is copied here such that it builds smoothly on ARM64 platform too!)
@@ -187,22 +187,22 @@ FROM jodogne/wasm-builder:2.0.23 as build-wasm-stone-viewer
 # RUN /opt/emsdk/emsdk actviate 3.1.8
 
 
-ARG ORTHANC_STONE_VIEWER_COMMIT_ID
+# ARG ORTHANC_STONE_VIEWER_COMMIT_ID
 
-RUN hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $ORTHANC_STONE_VIEWER_COMMIT_ID /source
+# RUN hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $ORTHANC_STONE_VIEWER_COMMIT_ID /source
 
-WORKDIR /source/Applications/StoneWebViewer/WebAssembly
-RUN chmod +x docker-internal.sh
-RUN STONE_BRANCH=${ORTHANC_STONE_VIEWER_COMMIT_ID} ./docker-internal.sh Release
+# WORKDIR /source/Applications/StoneWebViewer/WebAssembly
+# RUN chmod +x docker-internal.sh
+# RUN STONE_BRANCH=${ORTHANC_STONE_VIEWER_COMMIT_ID} ./docker-internal.sh Release
 
 
-FROM orthanc-builder-base as build-stone-viewer
+# FROM orthanc-builder-base as build-stone-viewer
 
-ARG ORTHANC_STONE_VIEWER_COMMIT_ID
+# ARG ORTHANC_STONE_VIEWER_COMMIT_ID
 
-RUN mkdir -p /downloads/wasm-binaries/StoneWebViewer
-COPY --from=build-wasm-stone-viewer /target/StoneWebViewer/ /downloads/wasm-binaries/StoneWebViewer
-RUN ls -al /downloads/wasm-binaries/StoneWebViewer
+# RUN mkdir -p /downloads/wasm-binaries/StoneWebViewer
+# COPY --from=build-wasm-stone-viewer /target/StoneWebViewer/ /downloads/wasm-binaries/StoneWebViewer
+# RUN ls -al /downloads/wasm-binaries/StoneWebViewer
 
 # RUN mkdir /downloads
 # # CHANGE_VERSION_STONE_WEB_VIEWER
@@ -210,10 +210,10 @@ RUN ls -al /downloads/wasm-binaries/StoneWebViewer
 # RUN unzip /downloads/wasm-binaries.zip -d /downloads
 
 # CHANGE_VERSION_STONE_WEB_VIEWER
-RUN hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $ORTHANC_STONE_VIEWER_COMMIT_ID /sources
-WORKDIR /build
-RUN cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DORTHANC_STONE_BINARIES=/downloads/wasm-binaries/StoneWebViewer /sources/Applications/StoneWebViewer/Plugin/
-RUN make -j 4
+# RUN hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $ORTHANC_STONE_VIEWER_COMMIT_ID /sources
+# WORKDIR /build
+# RUN cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DORTHANC_STONE_BINARIES=/downloads/wasm-binaries/StoneWebViewer /sources/Applications/StoneWebViewer/Plugin/
+# RUN make -j 4
 
 
 ########################## Orthanc azure storage plugins
@@ -270,9 +270,9 @@ WORKDIR /
 # prerequisites (for object-storage client side encryption)
 RUN export DEBIAN_FRONTEND=noninteractive && \
 	apt-get --assume-yes update && \
-		apt-get --assume-yes install libcrypto++-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+	apt-get --assume-yes install libcrypto++-dev && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 WORKDIR /sources
 
@@ -295,8 +295,8 @@ FROM orthanc-builder-base as build-oe2
 RUN export DEBIAN_FRONTEND=noninteractive && \
 	apt-get --assume-yes update && \
 	apt-get --assume-yes install nodejs npm && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 ARG ORTHANC_OE2_COMMIT_ID
 ARG ORTHANC_OE2_VERSION
@@ -304,7 +304,7 @@ ARG ORTHANC_OE2_VERSION
 WORKDIR /sources
 
 RUN git clone https://github.com/orthanc-server/orthanc-explorer-2.git && \
-    cd /sources/orthanc-explorer-2 && \
+	cd /sources/orthanc-explorer-2 && \
 	git checkout $ORTHANC_OE2_COMMIT_ID
 
 WORKDIR /sources/orthanc-explorer-2/WebApplication
@@ -363,7 +363,7 @@ COPY --from=build-plugin-odbc /build/libOrthancOdbcStorage.so /usr/share/orthanc
 COPY --from=build-plugin-tcia /build/libOrthancTcia.so /usr/share/orthanc/plugins-available/
 COPY --from=build-plugin-indexer /build/libOrthancIndexer.so /usr/share/orthanc/plugins-available/
 COPY --from=build-plugin-neuro /build/libOrthancNeuro.so /usr/share/orthanc/plugins-available/
-COPY --from=build-stone-viewer /build/libStoneWebViewer.so /usr/share/orthanc/plugins-available/
+# COPY --from=build-stone-viewer /build/libStoneWebViewer.so /usr/share/orthanc/plugins-available/
 COPY --from=build-oe2 /build/libOrthancExplorer2.so /usr/share/orthanc/plugins-available/
 
 COPY --from=build-downloader /downloads/libOsimisWebViewer.so /usr/share/orthanc/plugins-available/
@@ -420,9 +420,9 @@ RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/so
 
 RUN apt-key add /downloads/microsoft.asc
 RUN apt-get update && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+	ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 COPY --from=build-google-object-storage /build/cloud-storage/google/libOrthancGoogleCloudStorage.so /usr/share/orthanc/plugins-available/
 COPY --from=build-azure-object-storage /build/cloud-storage/azure/libOrthancAzureBlobStorage.so /usr/share/orthanc/plugins-available/
