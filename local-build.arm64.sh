@@ -181,6 +181,6 @@ for target in $buildTargets; do
         $push_load_arg \
         $tag_arg \
         --target $target \
-        -f docker/orthanc/Dockerfile docker/orthanc/
+        -f docker/orthanc/Dockerfile.arm64 docker/orthanc/
 
 done
