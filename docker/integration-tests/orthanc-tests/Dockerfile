@@ -1,20 +1,16 @@
 # mercurial does not work anymore on jodogne/orthanc-tests -> use a specific image
-FROM ubuntu:20.04 as ubuntu-hg
+FROM ubuntu:20.04 as orthanc-tests
 
 RUN apt-get update
 RUN	DEBIAN_FRONTEND=noninteractive apt-get --assume-yes install mercurial
 
-WORKDIR /
+WORKDIR /tests
 
 ARG ORTHANC_TESTS_REVISION=default
 RUN hg clone https://hg.orthanc-server.com/orthanc-tests/ -r $ORTHANC_TESTS_REVISION
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install dcmtk python-pil python-httplib2 python-numpy dicom3tools && rm -rf /var/lib/apt/lists/*
 
-##############################################################
-FROM jodogne/orthanc-tests as orthanc-tests
-RUN mkdir /tests
-WORKDIR /tests
-
-COPY --from=ubuntu-hg /orthanc-tests /tests/orthanc-tests
 RUN ls -al /tests/
 RUN mkdir /tmp/orthanc-tests/
 
