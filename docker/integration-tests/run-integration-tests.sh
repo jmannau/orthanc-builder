@@ -57,7 +57,7 @@ pip3 install -r requirements.txt
 
 ######## housekeeper
 
-previous_image=osimis/orthanc:22.4.0
+previous_image=osimis/orthanc:$tagToTest #22.4.0
 
 docker pull $previous_image
 
