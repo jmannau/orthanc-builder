@@ -15,7 +15,7 @@ http://127.0.0.1:8042/app/explorer.html. Please remember that Orthanc
 Explorer does not support Microsoft Internet Explorer.
 
 
-Content of the package 23.7.1
+Content of the package 23.9.0
 ------------------------------
 
 Orthanc server                        1.12.1
@@ -28,22 +28,22 @@ Multitenant DICOM plugin              1.12.1
 Stone Web viewer plugin               2.5
 Osimis Web viewer plugin              1.4.2
 Orthanc Web viewer plugin             2.8
-DICOMweb plugin                       1.14
+DICOMweb plugin                       1.15
 PostgreSQL plugins                    5.1
 MySQL plugins                         5.1
 WSI Web viewer plugin                 2.0
 Transfers accelerator plugin          1.4
-Authorization plugin                  0.5.3
+Authorization plugin                  0.6.0
 GDCM decoder/transcoder plugin        1.5
 ODBC plugin                           1.1
 TCIA plugin                           1.1
 Orthanc Indexer plugin                1.0
 Orthanc neuroimaging plugin           1.0
-Orthanc Explorer 2                    1.0.3
+Orthanc Explorer 2                    1.1.1
 Azure blob storage plugin             2.2.0          (Win64 installers only !)
 Kitware's VolView plugin              1.1
 OHIF plugin                           1.0
-
+Python plugin                         4.1
 
 Folders
 -------
