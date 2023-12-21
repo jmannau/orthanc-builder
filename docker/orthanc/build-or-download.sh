@@ -4,7 +4,7 @@ set -ex
 # This script is only meant to be run inside Docker during the build process.
 # It builds all Orthanc components individually and possibly try to download
 # the component before if it has already been built.
-# It possibly also uploads the components to orthanc.osimis.io
+# It possibly also uploads the components to public-files.orthanc.team/tmp-builds
 
 # example
 # for a CI build
@@ -59,9 +59,9 @@ popd () {
 download() { # $1 file
 
     mkdir -p $buildRootPath
-    already_built=$(($(curl --silent -I https://orthanc.osimis.io/docker-builds/$baseImage/$commitId-$1 | grep -E "^HTTP"     | awk -F " " '{print $2}') == 200))
+    already_built=$(($(curl --silent -I https://public-files.orthanc.team/tmp-builds/docker-builds/$baseImage/$commitId-$1 | grep -E "^HTTP"     | awk -F " " '{print $2}') == 200))
     if [[ $already_built == 1 ]]; then
-        wget "https://orthanc.osimis.io/docker-builds/$baseImage/$commitId-$1" --output-document $buildRootPath/$1
+        wget "https://public-files.orthanc.team/tmp-builds/docker-builds/$baseImage/$commitId-$1" --output-document $buildRootPath/$1
         echo 0
     else
         echo 1
@@ -72,7 +72,7 @@ upload() { # $1 file
     if [[ $enableUploads == 1 ]]; then
         echo "uploading $1";
 
-        aws s3 --region eu-west-1 cp $buildRootPath/$1 s3://orthanc.osimis.io/docker-builds/$baseImage/$commitId-$1 --cache-control=max-age=1
+        aws s3 --region eu-west-1 cp $buildRootPath/$1 s3://public-files.orthanc.team/tmp-builds/docker-builds/$baseImage/$commitId-$1 --cache-control=max-age=1
     else
         echo "skipping uploading of $1";
     fi
@@ -90,7 +90,7 @@ if [[ $target == "orthanc" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
 
         # note: building with static DCMTK while waiting for Debian bullseye to update to latest DCMTK issues (we need DCMTK 3.6.7: https://www.hipaajournal.com/warning-issued-about-3-high-severity-vulnerabilities-in-offis-dicom-software/)
@@ -115,7 +115,7 @@ elif [[ $target == "orthanc-authorization" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-authorization/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-authorization/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath
         make -j 4
@@ -130,7 +130,7 @@ elif [[ $target == "orthanc-python" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-python/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-python/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DPYTHON_VERSION=3.9 $sourcesRootPath
         make -j 4
@@ -144,7 +144,7 @@ elif [[ $target == "orthanc-gdcm" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-gdcm/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-gdcm/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DSTATIC_BUILD=ON $sourcesRootPath
         make -j 4
@@ -159,7 +159,7 @@ elif [[ $target == "orthanc-pg" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-databases/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-databases/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath/PostgreSQL
         make -j 4
@@ -175,7 +175,7 @@ elif [[ $target == "orthanc-mysql" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-databases/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-databases/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath/MySQL
         make -j 4
@@ -191,7 +191,7 @@ elif [[ $target == "orthanc-odbc" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-databases/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-databases/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath/Odbc
         make -j 4
@@ -279,14 +279,9 @@ elif [[ $target == "orthanc-volview" ]]; then
     dl=$(( $dl + $(download libOrthancVolView.so) ))
 
     if [[ $dl != 0 ]]; then
-
-        export DEBIAN_FRONTEND=noninteractive && apt-get --assume-yes update && apt-get --assume-yes install npm gnupg && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-        export DEBIAN_FRONTEND=noninteractive && \
-            mkdir -p /etc/apt/keyrings && \
-            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-            apt-get update && apt-get install --assume-yes nodejs
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
+        source /root/.bashrc
+        nvm install v19.7.0
 
         pushd $sourcesRootPath
         hg clone https://orthanc.uclouvain.be/hg/orthanc-volview/ -r $commitId $sourcesRootPath
@@ -317,13 +312,9 @@ elif [[ $target == "orthanc-ohif" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        export DEBIAN_FRONTEND=noninteractive && apt-get --assume-yes update && apt-get --assume-yes install npm gnupg && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-        export DEBIAN_FRONTEND=noninteractive && \
-            mkdir -p /etc/apt/keyrings && \
-            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-            apt-get update && apt-get install --assume-yes nodejs
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
+        source /root/.bashrc
+        nvm install v20.3.0
         npm install --global yarn
 
         pushd $sourcesRootPath
@@ -356,13 +347,11 @@ elif [[ $target == "orthanc-s3" ]]; then
         export DEBIAN_FRONTEND=noninteractive && apt-get --assume-yes update && apt-get --assume-yes install libcrypto++-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         cd $sourcesRootPath
-        hg clone https://hg.orthanc-server.com/orthanc-object-storage/ -r $commitId
-        # (framework version used to build the cloud storage plugins)
-        hg clone https://hg.orthanc-server.com/orthanc/ -r "Orthanc-1.10.1" 
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-object-storage/ -r $commitId
 
         pushd $buildRootPath
 
-        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_VCPKG_PACKAGES=OFF -DORTHANC_FRAMEWORK_SOURCE=path -DORTHANC_FRAMEWORK_ROOT=$sourcesRootPath/orthanc/OrthancFramework/Sources $sourcesRootPath/orthanc-object-storage/Aws/
+        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DALLOW_DOWNLOADS=ON -DUSE_VCPKG_PACKAGES=OFF $sourcesRootPath/orthanc-object-storage/Aws/
         make -j 4
 
         upload libOrthancAwsS3Storage.so
@@ -377,16 +366,11 @@ elif [[ $target == "orthanc-google-storage" ]]; then
         export DEBIAN_FRONTEND=noninteractive && apt-get --assume-yes update && apt-get --assume-yes install libcrypto++-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         cd $sourcesRootPath
-        hg clone https://hg.orthanc-server.com/orthanc-object-storage/ -r $commitId
-        # (framework version used to build the cloud storage plugins)
-        hg clone https://hg.orthanc-server.com/orthanc/ -r "Orthanc-1.10.1" 
-
-        # upgrade cmake minimum version to fix a Boost_FIND_COMPONENTS error: https://stackoverflow.com/questions/62930429/c-avro-cmake-failed
-        sed -i 's/cmake_minimum_required(VERSION 2.8)/cmake_minimum_required(VERSION 3.3)/g' $sourcesRootPath/orthanc-object-storage/Google/CMakeLists.txt
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-object-storage/ -r $commitId
 
         pushd $buildRootPath
 
-        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DORTHANC_FRAMEWORK_SOURCE=path -DORTHANC_FRAMEWORK_ROOT=$sourcesRootPath/orthanc/OrthancFramework/Sources $sourcesRootPath/orthanc-object-storage/Google/
+        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DALLOW_DOWNLOADS=ON -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake $sourcesRootPath/orthanc-object-storage/Google/
         make -j 4
 
         upload libOrthancGoogleCloudStorage.so
@@ -402,18 +386,11 @@ elif [[ $target == "orthanc-azure-storage" ]]; then
         export DEBIAN_FRONTEND=noninteractive && apt-get --assume-yes update && apt-get --assume-yes install libcrypto++-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         cd $sourcesRootPath
-        hg clone https://hg.orthanc-server.com/orthanc-object-storage/ -r $commitId
-        # (framework version used to build the cloud storage plugins)
-        hg clone https://hg.orthanc-server.com/orthanc/ -r "Orthanc-1.10.1" 
-
-        # upgrade cmake minimum version to fix a Boost_FIND_COMPONENTS error: https://stackoverflow.com/questions/62930429/c-avro-cmake-failed
-        sed -i 's/cmake_minimum_required(VERSION 2.8)/cmake_minimum_required(VERSION 3.3)/g' $sourcesRootPath/orthanc-object-storage/Azure/CMakeLists.txt
-        # todo: remove
-        sed -i 's/cryptopp-static/cryptopp::cryptopp/g' $sourcesRootPath/orthanc-object-storage/Azure/CMakeLists.txt
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-object-storage/ -r $commitId
 
         pushd $buildRootPath
 
-        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DORTHANC_FRAMEWORK_SOURCE=path -DORTHANC_FRAMEWORK_ROOT=$sourcesRootPath/orthanc/OrthancFramework/Sources $sourcesRootPath/orthanc-object-storage/Azure/
+        cmake -DCMAKE_BUILD_TYPE:STRING=Release -DALLOW_DOWNLOADS=ON -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake $sourcesRootPath/orthanc-object-storage/Azure/
         make -j 4
 
         upload libOrthancAzureBlobStorage.so
@@ -425,7 +402,7 @@ elif [[ $target == "orthanc-webviewer" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-webviewer/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-webviewer/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath
         make -j 4
@@ -440,7 +417,7 @@ elif [[ $target == "orthanc-transfers" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-transfers/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-transfers/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath
         make -j 4
@@ -456,25 +433,11 @@ elif [[ $target == "orthanc-dicomweb" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        # if [[ $version == "unstable" ]]; then
-
-        #     pushd $sourcesRootPath
-        #     hg clone https://hg.orthanc-server.com/orthanc-dicomweb/ -r $commitId
-        #     # TODO: remove: temporary code while waiting for SDK 1.12.2 to be released
-        #     hg clone https://hg.orthanc-server.com/orthanc/ -r 4ab905749aed
-
-        #     pushd $buildRootPath
-        #     cmake cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DORTHANC_SDK_VERSION=framework -DORTHANC_FRAMEWORK_SOURCE=path -DORTHANC_FRAMEWORK_ROOT=$sourcesRootPath/orthanc/OrthancFramework/Sources $sourcesRootPath/orthanc-dicomweb
-        #     make -j 4
-        #     $buildRootPath/UnitTests
-
-        # else
-        hg clone https://hg.orthanc-server.com/orthanc-dicomweb/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-dicomweb/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF $sourcesRootPath
         make -j 4
         $buildRootPath/UnitTests
-        # fi
 
         upload libOrthancDicomWeb.so
     fi
@@ -485,7 +448,7 @@ elif [[ $target == "orthanc-wsi" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-wsi/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-wsi/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DUSE_SYSTEM_OPENJPEG=OFF $sourcesRootPath/ViewerPlugin
         make -j 4
@@ -502,7 +465,7 @@ elif [[ $target == "orthanc-stone-wasm" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $commitId /source
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-stone/ -r $commitId /source
         pushd /source/Applications/StoneWebViewer/WebAssembly
         chmod +x docker-internal.sh
         STONE_BRANCH=${commitId} ./docker-internal.sh Release
@@ -529,7 +492,7 @@ elif [[ $target == "orthanc-stone-so" ]]; then
 
     if [[ $dl != 0 ]]; then
 
-        hg clone https://hg.orthanc-server.com/orthanc-stone/ -r $commitId $sourcesRootPath
+        hg clone https://orthanc.uclouvain.be/hg/orthanc-stone/ -r $commitId $sourcesRootPath
         pushd $buildRootPath
         cmake -DALLOW_DOWNLOADS=ON -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_SYSTEM_GOOGLE_TEST=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DORTHANC_STONE_BINARIES=/downloads/wasm-binaries/StoneWebViewer $sourcesRootPath/Applications/StoneWebViewer/Plugin/
         make -j 4

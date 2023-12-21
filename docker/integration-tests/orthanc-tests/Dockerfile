@@ -7,9 +7,7 @@ RUN	DEBIAN_FRONTEND=noninteractive apt-get --assume-yes install mercurial
 WORKDIR /tests
 
 ARG ORTHANC_TESTS_REVISION=default
-RUN hg clone https://hg.orthanc-server.com/orthanc-tests/ -r $ORTHANC_TESTS_REVISION
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install dcmtk python-pil python-httplib2 python-numpy dicom3tools && rm -rf /var/lib/apt/lists/*
+RUN hg clone https://orthanc.uclouvain.be/hg/orthanc-tests/ -r $ORTHANC_TESTS_REVISION
 
 RUN ls -al /tests/
 RUN mkdir /tmp/orthanc-tests/
@@ -91,8 +89,8 @@ RUN	DEBIAN_FRONTEND=noninteractive apt-get install -y libtiff-tools
 
 RUN mkdir /apps
 
-RUN wget https://orthanc.osimis.io/lsb/whole-slide-imaging/releases/2.0/OrthancWSIDicomToTiff --output-document /apps/OrthancWSIDicomToTiff --quiet
-RUN wget https://orthanc.osimis.io/lsb/whole-slide-imaging/releases/2.0/OrthancWSIDicomizer --output-document /apps/OrthancWSIDicomizer --quiet
+RUN wget https://orthanc.uclouvain.be/downloads/linux-standard-base/orthanc-wsi/2.0/OrthancWSIDicomToTiff --output-document /apps/OrthancWSIDicomToTiff --quiet
+RUN wget https://orthanc.uclouvain.be/downloads/linux-standard-base/orthanc-wsi/2.0/OrthancWSIDicomizer --output-document /apps/OrthancWSIDicomizer --quiet
 
 RUN chmod +x /apps/*
 

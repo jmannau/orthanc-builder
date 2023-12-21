@@ -14,16 +14,16 @@ Windows Installer and MacOS package are collecting build artifacts from the Orth
 ## stable releases
 
 - [Docker image (linux/amd64)](https://hub.docker.com/r/osimis/orthanc)
-- [Windows 64 bits installer](https://orthanc.osimis.io/win-installer/OrthancInstaller-Win64-latest.exe)
-- [Windows 32 bits installer](https://orthanc.osimis.io/win-installer/OrthancInstaller-Win32-latest.exe)
-- [MacOS package (Universal)](https://orthanc.osimis.io/osx/stable/orthancAndPluginsOSX.stable.zip)
+- [Windows 64 bits installer](https://orthanc.uclouvain.be/downloads/windows-64/installers/index.html)
+- [Windows 32 bits installer](https://orthanc.uclouvain.be/downloads/windows-32/installers/index.html)
+- [MacOS package (Universal)](https://orthanc.uclouvain.be/downloads/macos/packages/universal/index.html)
 
 ## unstable releases (nightly builds)
 
 - [Docker image (linux/amd64)](https://hub.docker.com/r/osimis/orthanc) (`osimis/orthanc:master-unstable` image)
 <!-- - [Windows 64 bits installer](https://orthanc.osimis.io/win-installer/OrthancInstaller-Win64-master.exe) these are actually 'stable'!-->
 <!-- - [Windows 32 bits installer](https://orthanc.osimis.io/win-installer/OrthancInstaller-Win32-master.exe) these are actually 'stable'!-->
-- [MacOS package (Universal)](https://orthanc.osimis.io/osx/releases/Orthanc-OSX-master-unstable.zip)
+- [MacOS package (Universal)](https://public-files.orthanc.team/MacOS-packages/Orthanc-MacOS-master-unstable.zip)
 
 
 **Notes**: 
@@ -52,7 +52,7 @@ This produces an image `osimis/orthanc:current`.
 
 - MacOS stable/unstable binaries and packages are rebuilt every night (if needed) and on every commit
 - Windows stable installers are rebuilt at every commit, they are available at:
-  - [https://orthanc.osimis.io/win-installer/OrthancInstaller-Win64-master.exe](https://orthanc.osimis.io/win-installer/OrthancInstaller-Win64-master.exe)
+  - [https://public-files.orthanc.team/tmp-builds/win-installer/OrthancInstaller-Win64-master.exe](https://public-files.orthanc.team/tmp-builds/win-installer/OrthancInstaller-Win64-master.exe)
 - Docker stable and unstable images are rebuilt every night and on every commit of this repo, they are available as:
   - `osimis/orthanc:master-stable`
   - `osimis/orthanc:master-unstable`
