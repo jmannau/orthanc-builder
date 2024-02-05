@@ -21,6 +21,7 @@ step=build
 currentTag=current
 pushTag=unknown
 image=normal
+isTag=false
 
 for argument in "$@"; do
     key=$(echo $argument | cut -f1 -d=)
@@ -66,7 +67,7 @@ ORTHANC_OE2_VERSION=$(getBranchTagToBuildDocker "Orthanc-explorer-2" $version)
 ORTHANC_VOLVIEW_COMMIT_ID=$(getCommitId "Orthanc-volview" $version docker $skipCommitChecks)
 ORTHANC_OHIF_COMMIT_ID=$(getCommitId "Orthanc-ohif" $version docker $skipCommitChecks)
 
-BASE_DEBIAN_IMAGE=bullseye-20231120-slim
+BASE_DEBIAN_IMAGE=bullseye-20240110-slim
 BASE_BUILDER_IMAGE_TAG=$BASE_DEBIAN_IMAGE-$version
 
 # list all intermediate targets.  It allows us to "slow down" the build and see what's going wrong (which is not possible with 10 parallel builds)
@@ -110,23 +111,23 @@ if [[ $type == "local" ]]; then
     prefer_downloads=1
     enable_upload=0
 else
-    from_cache_arg_runner_base="--cache-from=osimis/orthanc-runner-base:cache-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg_runner_base="--cache-to=osimis/orthanc-runner-base:cache-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg_runner_base="--cache-from=orthancteam/orthanc-runner-base:cache-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg_runner_base="--cache-to=orthancteam/orthanc-runner-base:cache-$BASE_BUILDER_IMAGE_TAG"
 
-    from_cache_arg_builder_base="--cache-from=osimis/orthanc-builder-base:cache-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg_builder_base="--cache-to=osimis/orthanc-builder-base:cache-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg_builder_base="--cache-from=orthancteam/orthanc-builder-base:cache-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg_builder_base="--cache-to=orthancteam/orthanc-builder-base:cache-$BASE_BUILDER_IMAGE_TAG"
 
-    from_cache_arg_builder_vcpkg="--cache-from=osimis/orthanc-builder-base:cache-vcpkg-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg_builder_vcpkg="--cache-to=osimis/orthanc-builder-base:cache-vcpkg-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg_builder_vcpkg="--cache-from=orthancteam/orthanc-builder-base:cache-vcpkg-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg_builder_vcpkg="--cache-to=orthancteam/orthanc-builder-base:cache-vcpkg-$BASE_BUILDER_IMAGE_TAG"
 
-    from_cache_arg_builder_vcpkg_azure="--cache-from=osimis/orthanc-builder-base:cache-vcpkg-azure-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg_builder_vcpkg_azure="--cache-to=osimis/orthanc-builder-base:cache-vcpkg-azure-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg_builder_vcpkg_azure="--cache-from=orthancteam/orthanc-builder-base:cache-vcpkg-azure-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg_builder_vcpkg_azure="--cache-to=orthancteam/orthanc-builder-base:cache-vcpkg-azure-$BASE_BUILDER_IMAGE_TAG"
 
-    from_cache_arg_builder_vcpkg_google="--cache-from=osimis/orthanc-builder-base:cache-vcpkg-google-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg_builder_vcpkg_google="--cache-to=osimis/orthanc-builder-base:cache-vcpkg-google-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg_builder_vcpkg_google="--cache-from=orthancteam/orthanc-builder-base:cache-vcpkg-google-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg_builder_vcpkg_google="--cache-to=orthancteam/orthanc-builder-base:cache-vcpkg-google-$BASE_BUILDER_IMAGE_TAG"
 
-    from_cache_arg="--cache-from=osimis/orthanc-builder-base:cache-main-$BASE_BUILDER_IMAGE_TAG"
-    to_cache_arg="--cache-to=osimis/orthanc-builder-base:cache-main-$BASE_BUILDER_IMAGE_TAG"
+    from_cache_arg="--cache-from=orthancteam/orthanc-builder-base:cache-main-$BASE_BUILDER_IMAGE_TAG"
+    to_cache_arg="--cache-to=orthancteam/orthanc-builder-base:cache-main-$BASE_BUILDER_IMAGE_TAG"
 
     # when building in CI, use buildx
     build="buildx build"
@@ -141,15 +142,26 @@ fi
 
 if [[ $step == "push" ]]; then
 
-    if [[ $version == "unstable" ]]; then
-        final_tag=$pushTag-unstable
+    # tag previously built images and push them
+
+    # push to orthancteam/orthanc only if it is a tag to keep the DockerHub tags clean !
+    if [[ $isTag == "true" ]]; then
+        docker tag orthancteam/orthanc:$currentTag orthancteam/orthanc:$pushTag
+        docker push orthancteam/orthanc:$pushTag
     else
-        final_tag=$pushTag
+        # otherwise we push to orthancteam/orthanc-unstable
+
+        if [[ $version == "unstable" ]]; then
+            final_tag=$pushTag-unstable
+        else
+            final_tag=$pushTag
+        fi
+
+        # tag previously build images and push them
+        docker tag orthancteam/orthanc:$currentTag orthancteam/orthanc-pre-release:$final_tag
+        docker push orthancteam/orthanc-pre-release:$final_tag
     fi
 
-    # tag previously build images and push them
-    docker tag osimis/orthanc:$currentTag osimis/orthanc:$final_tag
-    docker push osimis/orthanc:$final_tag
     exit 0
 else
 
@@ -168,7 +180,7 @@ add_host_cmd=--add-host=orthanc.uclouvain.be:130.104.229.21
 ###### runner-base
 docker $build \
     $add_host_cmd \
-    --progress=plain --platform=$platform -t osimis/orthanc-runner-base:$BASE_BUILDER_IMAGE_TAG \
+    --progress=plain --platform=$platform -t orthancteam/orthanc-runner-base:$BASE_BUILDER_IMAGE_TAG \
     --build-arg BASE_DEBIAN_IMAGE=$BASE_DEBIAN_IMAGE \
     $from_cache_arg_runner_base \
     $to_cache_arg_runner_base \
@@ -178,7 +190,7 @@ docker $build \
 ###### builder-base
 docker $build \
     $add_host_cmd \
-    --progress=plain --platform=$platform -t osimis/orthanc-builder-base:$BASE_BUILDER_IMAGE_TAG \
+    --progress=plain --platform=$platform -t orthancteam/orthanc-builder-base:$BASE_BUILDER_IMAGE_TAG \
     $from_cache_arg_builder_base \
     $to_cache_arg_builder_base \
     $push_load_arg_builder_image \
@@ -190,7 +202,7 @@ if [[ $image == "full" ]]; then
     ###### builder-base-vcpkg
     docker $build \
         $add_host_cmd \
-        --progress=plain --platform=$platform -t osimis/orthanc-builder-base:vcpkg-$BASE_BUILDER_IMAGE_TAG \
+        --progress=plain --platform=$platform -t orthancteam/orthanc-builder-base:vcpkg-$BASE_BUILDER_IMAGE_TAG \
         $from_cache_arg_builder_vcpkg \
         $to_cache_arg_builder_vcpkg \
         $push_load_arg_builder_image \
@@ -200,7 +212,7 @@ if [[ $image == "full" ]]; then
     ###### builder-base-vcpkg-azure
     docker $build \
         $add_host_cmd \
-        --progress=plain --platform=$platform -t osimis/orthanc-builder-base:vcpkg-azure-$BASE_BUILDER_IMAGE_TAG \
+        --progress=plain --platform=$platform -t orthancteam/orthanc-builder-base:vcpkg-azure-$BASE_BUILDER_IMAGE_TAG \
         $from_cache_arg_builder_vcpkg_azure \
         $to_cache_arg_builder_vcpkg_azure \
         $push_load_arg_builder_image \
@@ -210,7 +222,7 @@ if [[ $image == "full" ]]; then
     ###### builder-base-vcpkg-google
     docker $build \
         $add_host_cmd \
-        --progress=plain --platform=$platform -t osimis/orthanc-builder-base:vcpkg-google-$BASE_BUILDER_IMAGE_TAG \
+        --progress=plain --platform=$platform -t orthancteam/orthanc-builder-base:vcpkg-google-$BASE_BUILDER_IMAGE_TAG \
         $from_cache_arg_builder_vcpkg_google \
         $to_cache_arg_builder_vcpkg_google \
         $push_load_arg_builder_image \
@@ -221,13 +233,13 @@ fi
 for target in $buildTargets; do
 
     if [[ $target == $finalImageTarget ]]; then
-        tag_arg="--tag osimis/orthanc:$final_tag"
+        tag_arg="--tag orthancteam/orthanc:$final_tag"
     else
         tag_arg=
     fi
 
     # sleep 5
-    ###### osimis/orthanc
+    ###### orthancteam/orthanc
     docker $build \
         $add_host_cmd \
         --progress=plain --platform=$platform \

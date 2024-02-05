@@ -50,6 +50,7 @@ RUN pip install httplib2
 RUN pip install pillow
 RUN pip install pydicom
 RUN pip install pynetdicom
+RUN pip install 'easywebdav @ git+https://github.com/Marpache9131/easywebdav@511967ec374061161f2b3b67fb7b164fcc78143c'
 
 RUN mkdir /tests
 WORKDIR /tests
@@ -97,11 +98,11 @@ RUN chmod +x /apps/*
 ENTRYPOINT /scripts/wait-for-it.sh orthanc-under-tests:8042 -t 60 && python /tests/orthanc-tests/Plugins/WSI/Run.py --server=orthanc-under-tests --force --dicomizer=/apps/OrthancWSIDicomizer --to-tiff=/apps/OrthancWSIDicomToTiff -- -v
 
 ##############################################################
-FROM python2-7-base-image as orthanc-tests-webdav
+FROM python3-base-image as orthanc-tests-webdav
 
 ENTRYPOINT /scripts/wait-for-it.sh orthanc-under-tests:8042 -t 60 && python /tests/orthanc-tests/Plugins/WebDav/Run.py --server=orthanc-under-tests --force -- -v
 
 ##############################################################
-FROM python2-7-base-image as orthanc-tests-cget
+FROM python3-base-image as orthanc-tests-cget
 
 ENTRYPOINT /scripts/wait-for-it.sh orthanc-under-tests:8042 -t 60 && python /tests/orthanc-tests/Plugins/CGet/Run.py --server=orthanc-under-tests --force -- -v
