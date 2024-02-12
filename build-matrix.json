@@ -175,7 +175,7 @@
             "repoType": "hg",
             "sourcesSubPath": "/PostgreSQL",
             "comment": "# CHANGE_VERSION_PG",
-            "stable": "OrthancPostgreSQL-5.1",
+            "stable": "OrthancPostgreSQL-6.0",
             "unstable": "default",
             "artifactsMacOS": "libOrthancPostgreSQLIndex.dylib libOrthancPostgreSQLStorage.dylib",
             "buildForMacOS": true,
@@ -190,8 +190,8 @@
                     ["windows-64/orthanc-postgresql/OrthancPostgreSQLStorage-${VERSION}.dll", "Plugins", "OrthancPostgreSQLStorage.dll"]
                 ],
                 "Artifacts32": [
-                    ["windows-32/orthanc-postgresql/OrthancPostgreSQL-${VERSION}-Index.dll", "Plugins", "OrthancPostgreSQLIndex.dll"],
-                    ["windows-32/orthanc-postgresql/OrthancPostgreSQL-${VERSION}-Storage.dll", "Plugins", "OrthancPostgreSQLStorage.dll"]
+                    ["windows-32/orthanc-postgresql/OrthancPostgreSQLIndex-${VERSION}.dll", "Plugins", "OrthancPostgreSQLIndex.dll"],
+                    ["windows-32/orthanc-postgresql/OrthancPostgreSQLStorage-${VERSION}.dll", "Plugins", "OrthancPostgreSQLStorage.dll"]
                 ],
                 "Resources": [
                     ["postgresql.json", "Configuration"]

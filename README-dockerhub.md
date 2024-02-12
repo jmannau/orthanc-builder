@@ -15,7 +15,7 @@ You should use the full image only if you need to use one of these:
   - the Google Cloud storage plugin
   - the ODBC plugin with SQL Server (msodbcsql18 is preinstalled)
 
-Full documentation is available [here](https://book.orthanc-server.com/users/docker-osimis.html).
+Full documentation is available [here](https://book.orthanc-server.com/users/docker-orthancteam.html).
 
 Sample setups using this image are available [here](https://github.com/orthanc-server/orthanc-setup-samples/).
 
@@ -24,7 +24,7 @@ Release notes are available [here](https://github.com/orthanc-server/orthanc-bui
 
 # packages content
 
-#### 24.2.0 Default image
+#### 24.2.1 Default image
 ```
 component                             version
 ---------------------------------------------
@@ -40,7 +40,7 @@ Osimis Web viewer plugin              1.4.3
 Python plugin                         4.1
 Orthanc Web viewer plugin             2.8
 DICOMweb plugin                       1.16
-PostgreSQL plugins                    5.1
+PostgreSQL plugins                    6.0
 MySQL plugins                         5.1
 WSI Web viewer plugin                 2.0
 Authorization plugin                  0.6.2
@@ -56,7 +56,7 @@ Kitware's VolView plugin              1.1
 OHIF plugin                           1.2
 ```
 
-#### 24.2.0-full image 
+#### 24.2.1-full image 
 ```
 additional component                  version
 ---------------------------------------------
